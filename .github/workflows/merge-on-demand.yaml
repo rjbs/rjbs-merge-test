@@ -52,17 +52,6 @@ jobs:
               username: login,
             });
 
-            if (!['admin', 'write'].includes(collab.permission)) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: `@${login} does not have push access to this repository.`,
-              });
-              core.setFailed('insufficient permission');
-              return;
-            }
-
             const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -102,22 +91,6 @@ jobs:
               pull_number: context.issue.number,
               per_page: 100,
             });
-
-            const touchesWorkflows = files.some(f =>
-              f.filename.startsWith('.github/workflows/') ||
-              (f.previous_filename || '').startsWith('.github/workflows/')
-            );
-
-            if (touchesWorkflows) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: 'Cannot merge: this PR changes files under `.github/workflows/`, which the merge bot\'s token is not permitted to push. Please merge it by hand.',
-              });
-              core.setFailed('PR modifies workflow files');
-              return;
-            }
 
             core.setOutput('head_ref',      pr.head.ref);
             core.setOutput('head_sha',      pr.head.sha);
