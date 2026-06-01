@@ -44,6 +44,13 @@ jobs:
               return;
             }
 
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'Cannot merge: the head repository no longer exists (deleted fork?).',
+            });
+
             const login = context.payload.comment.user.login;
 
             const { data: collab } = await github.rest.repos.getCollaboratorPermissionLevel({
